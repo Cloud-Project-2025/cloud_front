@@ -1,21 +1,33 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
-import "./index.css";
+import Header from "./components/HeaderBar.jsx";
+import Home from "./pages/Home.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
+// import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
-function Home() {
-  return <div className="p-6"><h1 className="text-xl font-bold">Home</h1></div>;
+function Shell() {
+  const { isAuthed, logout } = useAuth();
+  return (
+    <>
+      <Header isAuthed={isAuthed} onLogout={logout} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+      
+      </Routes>
+    </>
+  );
 }
 
 export default function App() {
-  const [isAuthed, setAuthed] = useState(false);
   return (
-    <BrowserRouter>
-      {/* Header 컴포넌트는 나중에 추가 */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        {/* 나중에 /login, /register, /projects/:id 등 추가 */}
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Shell />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

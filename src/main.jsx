@@ -1,7 +1,10 @@
-// src/main.jsx
 import React from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
-import "./index.css";     // ← Tailwind 전역 CSS (꼭 존재해야 함)
+import "./index.css"; // ✅ 꼭 있어야 Tailwind 작동
 
-createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
