@@ -1,8 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* 배경/텍스트 기본 */
-:root{ --bg:#f6f8fb; --ink:#1f2937; }
-html, body { height: 100%; }
-body { background: var(--bg); color: var(--ink); }

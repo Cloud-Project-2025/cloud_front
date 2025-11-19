@@ -1,14 +1,17 @@
+// src/components/HeaderBar.jsx
+import { Link } from "react-router-dom";
+
 export default function HeaderBar({ onSearch, isAuthed = false, onLogout }) {
   return (
     <header className="w-full h-20 bg-[#d9d9d9] flex items-center">
       <div className="mx-auto w-full max-w-6xl px-4 flex items-center gap-3">
-        {/* ✅ 왼쪽 칸 → Home 링크로 변경 */}
-        <a
-          href="/"
+        {/* ✅ 왼쪽 칸 → Home 링크 */}
+        <Link
+          to="/"
           className="w-[215px] h-16 bg-white rounded-sm flex items-center justify-center text-[18px] font-medium text-[#333] hover:bg-[#ececec] transition"
         >
           Home
-        </a>
+        </Link>
 
         {/* 🔍 검색창 */}
         <div className="flex-1">
@@ -23,18 +26,19 @@ export default function HeaderBar({ onSearch, isAuthed = false, onLogout }) {
 
         {/* ⚙️ 우측 버튼들 */}
         <nav className="flex items-center gap-2">
-          <a
-            href="/admin/projects"
+          <Link
+            to="/admin/projects"
             className="h-16 w-[110px] bg-white grid place-items-center text-[16.98px]"
           >
             Manage
-          </a>
-          <a
-            href="/add"
+          </Link>
+
+          <Link
+            to="/projects/new"
             className="h-16 w-[110px] bg-white grid place-items-center text-[16.98px]"
           >
             Add Project
-          </a>
+          </Link>
 
           {isAuthed ? (
             <button
@@ -44,12 +48,12 @@ export default function HeaderBar({ onSearch, isAuthed = false, onLogout }) {
               Logout
             </button>
           ) : (
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="h-16 w-[110px] bg-white grid place-items-center text-[16.98px]"
             >
               Login
-            </a>
+            </Link>
           )}
         </nav>
       </div>
