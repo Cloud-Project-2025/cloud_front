@@ -6,39 +6,52 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import { AuthProvider, useAuth } from "./contexts/AuthContext.jsx";
 import ProjectForm from "./pages/ProjectForm.jsx";
-import UserProjects from "./pages/UserProjects.jsx"; // User Projects 관리 페이지
-import AdminProjects from "./pages/AdminProjects.jsx"; // Admin Projects 관리 페이지
-import AdminUserManagement from "./pages/AdminUserManagement.jsx"; // Admin User 관리 페이지
-import ProtectedRoute from "./routes/ProtectedRoute.jsx"; // Management 페이지 보호
-import ProjectDetailPage from "./pages/ProjectDetailPage.jsx"; // 프로젝트 상세보기 페이지 
-
+import UserProjects from "./pages/UserProjects.jsx";
+import AdminProjects from "./pages/AdminProjects.jsx";
+import AdminUserManagement from "./pages/AdminUserManagement.jsx";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import ProjectDetailPage from "./pages/ProjectDetailPage.jsx";
 
 function Shell() {
-  const { isAuthed, logout } = useAuth();
+  const { ready, isAuthed, logout } = useAuth();
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-100 text-slate-700">
+        <p className="text-sm">Loading...</p>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-100 text-slate-900">
       <Header isAuthed={isAuthed} onLogout={logout} />
+      {/* 각 페이지에서 컨테이너를 쓰고 있으니 여기서는 그냥 Routes만 */}
       <Routes>
         <Route path="/" element={<Home />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/projects/new" element={<ProjectForm mode="create" />} />
-        <Route path="/projects/:id/edit" element={<ProjectForm mode="edit" />} />
-        <Route path="/projects/:id" element={<ProjectDetailPage />} /> 
 
-
-        {/* User 프로젝트 관리 페이지 */}
         <Route
-          path="/user/projects"
+          path="/projects/new"
+          element={
+            <ProtectedRoute>
+              <ProjectForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
+
+        <Route
+          path="/me/projects"
           element={
             <ProtectedRoute>
               <UserProjects />
             </ProtectedRoute>
           }
         />
-        
-        {/* Admin 프로젝트 관리 페이지 */}
+
         <Route
           path="/admin/projects"
           element={
@@ -47,8 +60,6 @@ function Shell() {
             </ProtectedRoute>
           }
         />
-        
-        {/* Admin 유저 관리 페이지 */}
         <Route
           path="/admin/users"
           element={
@@ -58,7 +69,7 @@ function Shell() {
           }
         />
       </Routes>
-    </>
+    </div>
   );
 }
 

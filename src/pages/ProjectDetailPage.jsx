@@ -1,76 +1,185 @@
 // src/pages/ProjectDetailPage.jsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // 프로젝트 ID를 URL에서 가져오기
-import { getProject } from "../services/projectService"; // 프로젝트 서비스에서 API 함수 가져오기
+import { useParams } from "react-router-dom";
+import { getProject } from "../services/projectService";
+
+// 날짜 안전하게 포맷 (없거나 이상하면 "N/A")
+function formatDate(value) {
+  if (!value) return "N/A";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "N/A";
+  return d.toISOString().slice(0, 10); // 2024-01-01 형태
+}
+
+// 숫자 포맷 (없으면 "N/A")
+function formatNumber(value) {
+  if (value === null || value === undefined || value === "") return "N/A";
+  const num = Number(value);
+  if (Number.isNaN(num)) return String(value);
+  return num.toLocaleString();
+}
 
 export default function ProjectDetailPage() {
-  const { id } = useParams(); // URL에서 프로젝트 ID 받아오기
-  const [project, setProject] = useState(null); // 프로젝트 데이터를 저장할 상태
+  const { id } = useParams();
+  const [project, setProject] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // 프로젝트 상세 정보를 가져오는 함수
     const fetchProject = async () => {
       try {
-        const data = await getProject(id); // getProject로 데이터 받기
-        setProject(data); // 데이터를 state에 저장
-      } catch (error) {
-        console.error("Error fetching project details:", error);
+        setError("");
+        const data = await getProject(id);
+        setProject(data);
+      } catch (e) {
+        console.error("Error fetching project details:", e);
+        setError("프로젝트 정보를 불러오는 중 오류가 발생했습니다.");
       }
     };
+    fetchProject();
+  }, [id]);
 
-    fetchProject(); // 페이지 로드 시 호출
-  }, [id]); // id가 변경되면 다시 호출
-
-  if (!project) {
-    return <div>Loading...</div>; // 프로젝트 정보가 아직 오지 않았다면 로딩 화면
+  if (error) {
+    return (
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <p className="text-red-500 text-sm">{error}</p>
+      </div>
+    );
   }
 
+  if (!project) {
+    return (
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  // 필드 이름 유연하게 매핑 (DB 구조 달라도 웬만하면 따라감)
+  const title =
+    project.project_name || project.name || project.title || "제목 없음";
+  const description =
+    project.project_description ||
+    project.description ||
+    "프로젝트 설명이 없습니다.";
+
+  const projectId = project.project_id || project.projectId || project.id || "N/A";
+  const countryRegion =
+    project.country_region || project.countryRegion || project.region || "N/A";
+  const totalBudget =
+    project.total_budget ||
+    project.totalBudget ||
+    project.fundingAmount ||
+    project.total_amount ||
+    project.amount;
+
+  const status = project.status || project.project_status || "N/A";
+  const startDate =
+    project.start_date || project.startDate || project.start || project.begin;
+  const endDate =
+    project.end_date || project.endDate || project.end || project.finish;
+
+  const institution =
+    project.institution ||
+    project.implementing_agency ||
+    project.agency ||
+    "N/A";
+  const topic = project.topic || project.theme || project.sector || "N/A";
+  const coFinancing =
+    project.co_financing ||
+    project.coFinancing ||
+    project.co_finance ||
+    project.coFunding ||
+    null;
+
+  const carbonReduction =
+    project.carbon_reduction || project.carbonReduction || null;
+  const beneficiaries =
+    project.beneficiaries || project.beneficiary || null;
+  const risks = project.risks || project.risk_factors || project.risk || null;
+  const projectType =
+    project.project_type || project.type || project.fundingType || null;
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-semibold mb-6">{project.name}</h1>
-
-      {/* Description */}
-      <div className="mb-8">
-        <h2 className="text-xl font-medium text-[#5E5ADB]">Description</h2>
-        <p className="mt-2 text-base">{project.description}</p>
+    <div className="max-w-5xl mx-auto px-6 py-8">
+      {/* 상단 제목 영역 */}
+      <div className="mb-6">
+        <p className="text-xs text-gray-400 mb-1">상세정보</p>
+        <h1 className="text-3xl font-semibold">{title}</h1>
+        <p className="text-xs text-gray-400 mt-1">id : {projectId}</p>
       </div>
 
-      {/* Project Data */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-4 border border-gray-300 rounded-lg">
-          <h3 className="text-lg font-medium">Project Data</h3>
-          <ul className="mt-4 space-y-2">
-            <li>
-              <strong>Project ID:</strong> {project.projectId}
-            </li>
-            <li>
-              <strong>Country / Region:</strong> {project.countryRegion}
-            </li>
-            <li>
-              <strong>Funding Amount:</strong> ${project.fundingAmount}
-            </li>
-            <li>
-              <strong>Start Date:</strong> {new Date(project.startDate).toLocaleDateString()}
-            </li>
-            <li>
-              <strong>End Date:</strong> {new Date(project.endDate).toLocaleDateString()}
-            </li>
-            <li>
-              <strong>Funding Type:</strong> {project.fundingType}
-            </li>
-            {/* 추가적인 데이터 항목들 */}
-            <li>
-              <strong>Carbon reduction:</strong> {project.carbonReduction || "N/A"}
-            </li>
-            <li>
-              <strong>Beneficiaries:</strong> {project.beneficiaries || "N/A"}
-            </li>
-            <li>
-              <strong>Remarks:</strong> {project.remarks || "N/A"}
-            </li>
-          </ul>
+      {/* Description 박스 (왼쪽 디자인처럼 넓게) */}
+      <section className="mb-8">
+        <h2 className="text-base font-semibold mb-2">Description</h2>
+        <div className="border border-gray-300 rounded-md min-h-[160px] px-4 py-3 text-sm leading-relaxed">
+          {description}
         </div>
-      </div>
+      </section>
+
+      {/* Project Data 섹션 */}
+      <section>
+        <h2 className="text-base font-semibold mb-2">Project Data</h2>
+        <div className="border border-gray-300 rounded-md px-6 py-4 text-sm">
+          <dl className="space-y-2">
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">프로젝트명</dt>
+              <dd>{title}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">프로젝트 번호</dt>
+              <dd>{projectId}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">나라 / 지역</dt>
+              <dd>{countryRegion}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">총 사업비</dt>
+              <dd>{formatNumber(totalBudget)}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">상태</dt>
+              <dd>{status}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">시작일</dt>
+              <dd>{formatDate(startDate)}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">종료일</dt>
+              <dd>{formatDate(endDate)}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">기관</dt>
+              <dd>{institution}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">주제</dt>
+              <dd>{topic}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">공동 재정</dt>
+              <dd>{coFinancing ? formatNumber(coFinancing) : "N/A"}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">Carbon reduction</dt>
+              <dd>{carbonReduction ?? "N/A"}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">수혜자 수</dt>
+              <dd>{beneficiaries ?? "N/A"}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">위험요소</dt>
+              <dd>{risks ?? "N/A"}</dd>
+            </div>
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">편입 타입</dt>
+              <dd>{projectType ?? "N/A"}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
     </div>
   );
 }

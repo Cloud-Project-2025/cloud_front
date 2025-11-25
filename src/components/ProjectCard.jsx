@@ -1,63 +1,57 @@
 // src/components/ProjectCard.jsx
-import React from 'react';
-
-// 상태(status) 값에 따라 색상을 반환하는 함수
-const getStatusColor = (status) => {
-  switch (status) {
-    case '진행 중':
-      return 'text-yellow-600 font-semibold';
-    case '완료':
-      return 'text-green-600 font-semibold';
-    case '예정':
-      return 'text-gray-500 font-semibold';
-    default:
-      return 'text-gray-500';
-  }
-};
 
 export default function ProjectCard({ project, onClick }) {
-  const { id, title, description, country_region, institution, status } = project;
-  
+  const title =
+    project.title || project.name || project.project_name || "proj name";
+  const description =
+    project.description ||
+    project.project_description ||
+    "프로젝트 설명이 없습니다.";
+
+  const id = project.id || project.project_id || "N/A";
+  const region = project.country_region || project.region || "N/A";
+  const institution = project.institution || project.agency || "N/A";
+  const status = project.status || "N/A";
+
+  const statusColor =
+    status === "진행 중"
+      ? "text-amber-500"
+      : status === "완료"
+      ? "text-emerald-500"
+      : status === "예정"
+      ? "text-sky-500"
+      : "text-slate-500";
+
   return (
-    // 직사각형 테두리 카드 스타일 적용
-    <div
-      className="p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition duration-200 shadow-sm"
+    <button
+      type="button"
       onClick={onClick}
-      role="button"
+      className="w-full text-left group"
     >
-      {/* 카드 내용을 좌측(정보)과 우측(상태) 2열로 나누는 Grid 레이아웃 */}
-      <div className="grid grid-cols-[1fr_auto] gap-4">
-        
-        {/* 좌측: 프로젝트 상세 정보 */}
-        <div>
-          {/* 제목 (title) */}
-          <h3 className="text-lg font-bold text-blue-700 leading-tight mb-1">
-            {title}
-          </h3>
-          
-          {/* 설명 (desc) */}
-          {description && (
-            <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+      <article className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 transition hover:-translate-y-0.5 hover:shadow-md">
+        <div className="flex items-start justify-between gap-4">
+          {/* 왼쪽: 텍스트 */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[15px] font-semibold text-indigo-700 mb-1 group-hover:text-indigo-800 truncate">
+              {title}
+            </h3>
+            <p className="text-sm text-slate-600 line-clamp-2">
               {description}
             </p>
-          )}
-          
-          {/* 하단 상세 메타데이터 (ID, 지역, 기관) - 작은 회색 텍스트 */}
-          <div className="text-xs text-gray-500 flex flex-wrap gap-x-3">
-            <span className="truncate">ID: {id}</span>
-            <span className="truncate">지역: {country_region}</span>
-            <span className="truncate">기관: {institution}</span>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span>ID: {id}</span>
+              <span>지역: {region}</span>
+              <span>기관: {institution}</span>
+            </div>
+          </div>
+
+          {/* 오른쪽: status */}
+          <div className="text-right text-xs shrink-0">
+            <span className="block text-slate-400 mb-1">status</span>
+            <span className={`font-semibold ${statusColor}`}>{status}</span>
           </div>
         </div>
-        
-        {/* 우측: 상태 (Status) */}
-        <div className="flex flex-col items-end pt-1">
-          <span className="text-xs text-gray-500">status:</span>
-          <span className={`text-sm ${getStatusColor(status)} whitespace-nowrap`}>
-            {status}
-          </span>
-        </div>
-      </div>
-    </div>
+      </article>
+    </button>
   );
 }
