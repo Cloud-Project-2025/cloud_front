@@ -1,12 +1,16 @@
 // src/pages/UserProjects.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard.jsx";
 import FilterSidebar from "../components/FilterSidebar.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { mockProjects } from "../mock/mockData.js";
+// import { getUserProjects } from "../services/projectService"; // 실제 서비스 예시
 
 export default function UserProjects() {
   const { user } = useAuth();
+  const nav = useNavigate();
+
   const [allProjects, setAllProjects] = useState([]);
   const [visibleProjects, setVisibleProjects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -14,6 +18,28 @@ export default function UserProjects() {
 
   useEffect(() => {
     if (!user) return;
+
+    // ✅ 실제 서비스 예시 (백엔드에서 현재 유저의 프로젝트만 가져오기)
+    /*
+    setLoading(true);
+    getUserProjects(user.id)
+      .then((res) => {
+        const list = res.data || [];
+        setAllProjects(list);
+        setVisibleProjects(list);
+      })
+      .catch((err) => {
+        console.error("getUserProjects 실패, mock으로 대체:", err);
+        const mine = mockProjects.filter(
+          (p) => p.ownerEmail === user.email // 또는 p.author 등
+        );
+        setAllProjects(mine);
+        setVisibleProjects(mine);
+      })
+      .finally(() => setLoading(false));
+    */
+
+    // ✅ 더미 테스트 (현재 사용 중)
     const mine = mockProjects.filter((p) => p.ownerEmail === user.email);
     setAllProjects(mine);
     setVisibleProjects(mine);
@@ -80,8 +106,12 @@ export default function UserProjects() {
       {/* 왼쪽 My Projects 카드 */}
       <section className="flex-1 space-y-3 order-1">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4 mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">My Projects Management</h2>
-          <div className="flex items-center gap-3 text-sm text-slate-600">
+          {/* 로그인한 사용자 이메일 표시 */}
+          <h2 className="text-lg font-semibold">
+            {user ? `${user.email} 님의 프로젝트` : "My Projects Management"}
+    </h2>
+
+    <div className="flex items-center gap-3 text-sm text-slate-600">
             <label className="flex items-center gap-2 text-xs cursor-pointer">
               <input
                 type="checkbox"
@@ -118,7 +148,10 @@ export default function UserProjects() {
                 />
               </div>
               <div className="flex-1">
-                <ProjectCard project={project} onClick={() => {}} />
+                <ProjectCard
+                  project={project}
+                  onClick={() => nav(`/projects/${project.id}`)} // 상세보기로 이동
+                />
               </div>
             </div>
           ))

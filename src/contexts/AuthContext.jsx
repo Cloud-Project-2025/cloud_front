@@ -1,47 +1,69 @@
 // src/contexts/AuthContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { setToken, getToken, clearToken } from "../lib/auth";
-import { loginReq, meReq, registerReq } from "../services/authService";
+import { clearToken } from "../lib/auth";
+import { mockUsers } from "../mock/mockData.js"; // ★ 더미 유저 불러오기
 
 const AuthCtx = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
-  // 원래코드
-  // useEffect(() => {
-  //   const t = getToken();
-  //   if (!t) { setReady(true); return; }
-  //   meReq().then(setUser).catch(() => clearToken()).finally(() => setReady(true));
-  // }, []);
-  // 테스트용
+
+  // ============================
+  // ⭐ 테스트 모드: 자동 로그인 없음
+  // ============================
   useEffect(() => {
-    // DB 연동 없이 임시로 로그인 상태를 만들기 위해 user를 설정
-    // 실제로는 로그인 API와 연결해야 하지만, 로컬 상태로 우회 처리
-    // 예시로 admin 계정으로 로그인 상태 설정
-    setUser({ email: "admin@admin.com" });  // 임시 로그인 상태 설정
-    setReady(true);  // 준비 완료
+    setReady(true);
   }, []);
 
-
+  // ============================
+  // 🔥 더미 로그인
+  // ============================
   const login = async (email, password) => {
-    const { token, user } = await loginReq({ email, password });
-    if (!token) throw new Error("No token returned");
-    setToken(token);
-    setUser(user || { email });
+    // mockUsers 에 있는 유저인지 확인
+    const found = mockUsers.find((u) => u.email === email);
+    if (!found) {
+      throw new Error("Invalid email or password");
+    }
+
+    // 비밀번호는 무시하고 이메일만 체크
+    setUser(found);
     return true;
   };
 
+  // ============================
+  // 🔥 더미 회원가입
+  // ============================
   const register = async (email, password) => {
-    const { token, user } = await registerReq({ email, password });
-    if (token) setToken(token);
-    if (user) setUser(user);
+    mockUsers.push({
+      id: mockUsers.length + 1,
+      email,
+      role: "user",
+    });
+    setUser({ email, role: "user" });
     return true;
   };
 
-  const logout = () => { clearToken(); setUser(null); };
+  const logout = () => {
+    clearToken();
+    setUser(null);
+  };
 
-  const value = useMemo(() => ({ user, isAuthed: !!user, ready, login, logout, register }), [user, ready]);
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthed: !!user,
+      ready,
+      login,
+      logout,
+      register,
+    }),
+    [user, ready]
+  );
+
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
-export function useAuth() { return useContext(AuthCtx); }
+
+export function useAuth() {
+  return useContext(AuthCtx);
+}

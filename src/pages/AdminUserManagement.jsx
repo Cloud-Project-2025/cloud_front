@@ -2,13 +2,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mockUsers, mockProjects } from "../mock/mockData.js";
+// 실제 서비스 예시 API (백엔드 붙일 때 사용)
+// import { getAllUsers } from "../services/adminService";
 
 export default function AdminUserManagement() {
   const nav = useNavigate();
 
   const [users, setUsers] = useState([]);
 
-  // 유저별 작성 프로젝트 수 계산
+  // ✅ 더미 테스트: 유저별 작성 프로젝트 수 계산
   const usersWithCounts = useMemo(() => {
     return mockUsers.map((u) => {
       const posts = mockProjects.filter((p) => p.ownerEmail === u.email).length;
@@ -18,6 +20,21 @@ export default function AdminUserManagement() {
 
   // 처음 로드시 더미 유저 세팅
   useEffect(() => {
+    // ✅ 실제 서비스용 (백엔드 붙일 때)
+    /*
+    getAllUsers()
+      .then((res) => {
+        const list = res.data || [];
+        // totalPosts는 백엔드에서 내려주거나, 여기서 다시 계산 가능
+        setUsers(list);
+      })
+      .catch((err) => {
+        console.error("getAllUsers 실패, mock으로 대체:", err);
+        setUsers(usersWithCounts);
+      });
+    */
+
+    // ✅ 현재 보고서 / 데모용: 더미 데이터 사용
     setUsers(usersWithCounts);
   }, [usersWithCounts]);
 
@@ -52,9 +69,9 @@ export default function AdminUserManagement() {
   };
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 max-w-6xl mx-auto px-4 py-8">
       {/* 상단 타이틀 + Projects Management 링크 */}
-      <div className="flex items-center justify-between bg-[#D9D9D9] px-6 py-3 mb-2">
+      <div className="flex items-center justify-between bg-[#D9D9D9] px-6 py-3 mb-2 rounded-t-xl border border-b-0 border-gray-300">
         <h2 className="text-xl font-semibold">User Management</h2>
         <button
           type="button"
@@ -66,7 +83,7 @@ export default function AdminUserManagement() {
       </div>
 
       {/* 선택 정보 바 */}
-      <div className="flex items-center justify-between bg-gray-200 px-4 py-2 mb-2">
+      <div className="flex items-center justify-between bg-gray-200 px-4 py-2 mb-2 border border-gray-300 border-t-0">
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -86,7 +103,7 @@ export default function AdminUserManagement() {
       </div>
 
       {/* 유저 테이블 */}
-      <div className="px-4">
+      <div className="px-4 border border-gray-300 border-t-0 rounded-b-xl bg-white">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-gray-100 text-left">
@@ -108,7 +125,7 @@ export default function AdminUserManagement() {
           <tbody>
             {users.length ? (
               users.map((u) => (
-                <tr key={u.id} className="border-b">
+                <tr key={u.id} className="border-b last:border-b-0">
                   <td className="p-2">
                     <input
                       type="checkbox"

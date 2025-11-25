@@ -1,6 +1,8 @@
+// src/pages/Login.jsx
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useNavigate, Link } from "react-router-dom";
+// import { mockUsers } from "../mock/mockData.js"; // 필요하면 프론트 단에서만 테스트용으로 사용할 수 있음
 
 export default function Login() {
   const { login } = useAuth();
@@ -9,12 +11,40 @@ export default function Login() {
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
 
+  /**
+   * ✅ 실제 서비스
+   *   - AuthContext.login(email, pw) 내부에서
+   *     백엔드 API(/api/auth/login 등)를 호출한다고 가정
+   *
+   * ✅ 더미 테스트 (설명용)
+   *   - mockUsers 에 있는 계정 예시:
+   *      admin@aaa.com (admin)
+   *      aaa@aaa.com   (user)
+   *      bbb@bbb.com   (user)
+   *   - 지금 코드는 login()을 그대로 호출하므로,
+   *     실제 테스트할 때는 백엔드 쪽에서 위 계정을 만들어두면 됨.
+   */
+
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
     try {
+      // 실제 서비스: AuthContext.login 사용
       await login(email, pw);
       nav("/");
+
+      // 프론트 단에서만 더미 로그인 강제로 쓰고 싶으면(예시):
+      // 1) 위 login(email, pw) 주석 처리
+      // 2) 아래 코드 참고
+      //
+      // const found = mockUsers.find((u) => u.email === email);
+      // if (!found) {
+      //   setError("테스트 계정이 존재하지 않습니다.");
+      //   return;
+      // }
+      // // 여기서 localStorage 등에 더미 토큰 저장 후 새로고침 등
+      // nav("/");
+
     } catch {
       setError("Invalid email or password.");
     }

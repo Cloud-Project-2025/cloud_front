@@ -4,9 +4,13 @@ import { useNavigate } from "react-router-dom";
 import ProjectCard from "../components/ProjectCard.jsx";
 import FilterSidebar from "../components/FilterSidebar.jsx";
 import { mockProjects } from "../mock/mockData.js";
+import { useAuth } from "../contexts/AuthContext.jsx";
+// 실제 서비스 예시 API (백엔드 붙일 때 사용)
+// import { getAllProjects } from "../services/projectService";
 
 export default function AdminProjects() {
   const nav = useNavigate();
+  const { user } = useAuth();
 
   const [allProjects, setAllProjects] = useState([]);
   const [visibleProjects, setVisibleProjects] = useState([]);
@@ -14,6 +18,24 @@ export default function AdminProjects() {
   const [selectedIds, setSelectedIds] = useState([]);
 
   useEffect(() => {
+    // ✅ 실제 서비스용 (백엔드 붙일 때 이 블록을 살리고, mock 부분은 지우면 됨)
+    /*
+    setLoading(true);
+    getAllProjects()
+      .then((res) => {
+        const list = res.data || [];
+        setAllProjects(list);
+        setVisibleProjects(list);
+      })
+      .catch((err) => {
+        console.error("getAllProjects 실패, mock으로 대체:", err);
+        setAllProjects(mockProjects);
+        setVisibleProjects(mockProjects);
+      })
+      .finally(() => setLoading(false));
+    */
+
+    // ✅ 현재 보고서 / 데모용: 프론트 더미 데이터 사용
     setAllProjects(mockProjects);
     setVisibleProjects(mockProjects);
   }, []);
@@ -23,6 +45,7 @@ export default function AdminProjects() {
     try {
       const next = applyFilters(allProjects, filters);
       setVisibleProjects(next);
+      // 필터 후, 존재하는 아이디만 선택 유지
       setSelectedIds((prev) =>
         prev.filter((id) => next.some((p) => p.id === id))
       );
@@ -45,6 +68,7 @@ export default function AdminProjects() {
     const visibleIds = visibleProjects.map((p) => p.id);
     const allSelected =
       visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+
     if (allSelected) {
       setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
     } else {
@@ -54,9 +78,7 @@ export default function AdminProjects() {
 
   const handleBulkDelete = () => {
     if (!selectedIds.length) return;
-    if (
-      !window.confirm(`${selectedIds.length}개 프로젝트를 삭제할까요? (더미)`)
-    )
+    if (!window.confirm(`${selectedIds.length}개 프로젝트를 삭제할까요? (더미)`))
       return;
 
     const leftAll = allProjects.filter((p) => !selectedIds.includes(p.id));
@@ -83,13 +105,19 @@ export default function AdminProjects() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4 mb-2 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Projects Management</h2>
-            <p
-              className="text-[11px] text-slate-400 cursor-pointer mt-1"
+            <p className="text-[11px] text-slate-400">
+              {user ? `Admin: ${user.email}` : "Admin"}
+            </p>
+
+            <button
+              type="button"
+              className="text-[11px] text-indigo-600 cursor-pointer mt-1 hover:underline"
               onClick={() => nav("/admin/users")}
             >
               User Management &gt;
-            </p>
+            </button>
           </div>
+
           <div className="flex items-center gap-3 text-sm text-slate-600">
             <label className="flex items-center gap-2 text-xs cursor-pointer">
               <input
@@ -127,7 +155,10 @@ export default function AdminProjects() {
                 />
               </div>
               <div className="flex-1">
-                <ProjectCard project={project} onClick={() => {}} />
+                <ProjectCard
+                  project={project}
+                  onClick={() => nav(`/projects/${project.id}`)} // 상세보기 이동
+                />
               </div>
             </div>
           ))

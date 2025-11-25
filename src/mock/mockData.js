@@ -1,7 +1,16 @@
 // src/mock/mockData.js
 // 프론트 전용 더미 데이터
+// ------------------------------
+// ✅ 실제 서비스
+//   - 백엔드 DB (USERLIST, PROJECT 테이블 등)에서 가져옴
+//   - API 예: /api/auth/users, /api/projects ...
+//
+// ✅ 더미 테스트 (현재 사용 중)
+//   - 프론트에서만 사용하는 하드코딩 데이터
+//   - 로그인/목록/상세/어드민 화면 전부 이걸 기준으로 동작
 
 // 더미 유저 목록
+// role: "admin" | "user"
 export const mockUsers = [
   { id: 1, email: "admin@aaa.com", role: "admin" },
   { id: 2, email: "aaa@aaa.com", role: "user" },
@@ -17,7 +26,7 @@ export const mockProjects = [
     country_region: "Afghanistan",
     institution: "Green Climate Fund",
     status: "진행 중",
-    ownerEmail: "aaa@aaa.com",
+    ownerEmail: "aaa@aaa.com", // 작성자
   },
   {
     id: 102,

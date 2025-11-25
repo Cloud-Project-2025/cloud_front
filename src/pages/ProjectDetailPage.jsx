@@ -1,7 +1,10 @@
 // src/pages/ProjectDetailPage.jsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getProject } from "../services/projectService";
+// 🔹 실제 서비스용 API (지금은 사용 X, 나중에 백엔드 연결 시 주석 해제)
+// import { getProject } from "../services/projectService";
+// 🔹 더미 테스트용 데이터
+import { mockProjects } from "../mock/mockData.js";
 
 // 날짜 안전하게 포맷 (없거나 이상하면 "N/A")
 function formatDate(value) {
@@ -25,17 +28,36 @@ export default function ProjectDetailPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        setError("");
-        const data = await getProject(id);
-        setProject(data);
-      } catch (e) {
-        console.error("Error fetching project details:", e);
-        setError("프로젝트 정보를 불러오는 중 오류가 발생했습니다.");
-      }
-    };
-    fetchProject();
+    setError("");
+    setProject(null);
+
+    // ================================
+    // 🧩 실제 서비스용 (백엔드 연결 후 사용)
+    // ================================
+    // const fetchFromApi = async () => {
+    //   try {
+    //     const data = await getProject(id);  // 예: GET /api/projects/:id
+    //     if (data) {
+    //       setProject(data);
+    //       return;
+    //     }
+    //   } catch (e) {
+    //     console.error("getProject API 실패:", e);
+    //     // 지금은 실패해도 mock으로 넘어감
+    //   }
+    // };
+
+    // fetchFromApi();
+
+    // ================================
+    // ⭐ 현재: 더미 데이터로만 동작
+    // ================================
+    const dummy = mockProjects.find((p) => String(p.id) === String(id));
+    if (!dummy) {
+      setError("프로젝트 정보를 찾을 수 없습니다. (mock)");
+      return;
+    }
+    setProject(dummy);
   }, [id]);
 
   if (error) {
@@ -108,7 +130,7 @@ export default function ProjectDetailPage() {
         <p className="text-xs text-gray-400 mt-1">id : {projectId}</p>
       </div>
 
-      {/* Description 박스 (왼쪽 디자인처럼 넓게) */}
+      {/* Description 박스 */}
       <section className="mb-8">
         <h2 className="text-base font-semibold mb-2">Description</h2>
         <div className="border border-gray-300 rounded-md min-h-[160px] px-4 py-3 text-sm leading-relaxed">

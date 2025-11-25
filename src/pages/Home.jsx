@@ -4,11 +4,35 @@ import { useState } from "react";
 import ProjectCard from "../components/ProjectCard.jsx";
 import FilterSidebar from "../components/FilterSidebar.jsx";
 import { mockProjects } from "../mock/mockData.js";
+// import { getAllProjects } from "../services/projectService"; // 실제 서비스용 예시
 
 export default function Home() {
   const nav = useNavigate();
+
+  // ✅ 더미 테스트: 처음에 mockProjects로 화면 채우기
   const [projects, setProjects] = useState(mockProjects);
   const [loading, setLoading] = useState(false);
+
+  /**
+   * ✅ 실제 서비스 예시 (백엔드에서 프로젝트 목록 가져오기)
+   *
+   * async function fetchProjectsFromApi(filters) {
+   *   setLoading(true);
+   *   try {
+   *     const res = await getAllProjects(filters); // 예: /api/projects?...
+   *     const list = res.data || [];
+   *     setProjects(list);
+   *   } catch (e) {
+   *     console.error("프로젝트 목록 불러오기 실패:", e);
+   *     setProjects([]);
+   *   } finally {
+   *     setLoading(false);
+   *   }
+   * }
+   *
+   * 현재는 보고서용 화면 확인을 위해
+   * → mockProjects에 필터만 적용하는 함수 사용 중
+   */
 
   const fetchProjects = async (filters) => {
     setLoading(true);
