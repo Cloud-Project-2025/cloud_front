@@ -46,7 +46,6 @@ export default function ProjectDetailPage() {
     //     // 지금은 실패해도 mock으로 넘어감
     //   }
     // };
-
     // fetchFromApi();
 
     // ================================
@@ -76,18 +75,32 @@ export default function ProjectDetailPage() {
     );
   }
 
-  // 필드 이름 유연하게 매핑 (DB 구조 달라도 웬만하면 따라감)
+  // ================================
+  // 필드 이름 유연하게 매핑
+  //  - GCF DB 컬럼 우선 (budget, theme_area, institution 등)
+  //  - 값이 없으면 아래에서 N/A 처리
+  // ================================
   const title =
     project.project_name || project.name || project.title || "제목 없음";
+
   const description =
     project.project_description ||
     project.description ||
     "프로젝트 설명이 없습니다.";
 
-  const projectId = project.project_id || project.projectId || project.id || "N/A";
+  const projectId =
+    project.project_id || project.projectId || project.id || "N/A";
+
   const countryRegion =
-    project.country_region || project.countryRegion || project.region || "N/A";
+    project.country_region ||
+    project.countryRegion ||
+    project.country ||
+    project.region ||
+    "N/A";
+
+  // 🔹 총 사업비: GCF budget 컬럼 우선
   const totalBudget =
+    project.budget ||
     project.total_budget ||
     project.totalBudget ||
     project.fundingAmount ||
@@ -95,31 +108,64 @@ export default function ProjectDetailPage() {
     project.amount;
 
   const status = project.status || project.project_status || "N/A";
+
   const startDate =
     project.start_date || project.startDate || project.start || project.begin;
+
   const endDate =
     project.end_date || project.endDate || project.end || project.finish;
 
   const institution =
     project.institution ||
+    project.organization ||
     project.implementing_agency ||
     project.agency ||
     "N/A";
-  const topic = project.topic || project.theme || project.sector || "N/A";
+
+  // 🔹 주제 영역: GCF theme_area 우선
+  const topic =
+    project.theme_area ||
+    project.topic ||
+    project.theme ||
+    project.sector ||
+    "N/A";
+
   const coFinancing =
     project.co_financing ||
     project.coFinancing ||
     project.co_finance ||
     project.coFunding ||
+    project.cofinancing ||
     null;
 
   const carbonReduction =
     project.carbon_reduction || project.carbonReduction || null;
-  const beneficiaries =
-    project.beneficiaries || project.beneficiary || null;
-  const risks = project.risks || project.risk_factors || project.risk || null;
+
+  const beneficiaries = project.beneficiaries || project.beneficiary || null;
+
+  const risks =
+    project.risks ||
+    project.risk_factors ||
+    project.risk_factor ||
+    project.risk ||
+    null;
+
   const projectType =
-    project.project_type || project.type || project.fundingType || null;
+    project.project_type ||
+    project.type ||
+    project.fundingType ||
+    project.finance_type ||
+    project.loan_type ||
+    null;
+
+  const site = project.site || project.fund_site || "N/A";
+
+  const durationDays =
+    project.duration_days !== undefined && project.duration_days !== null
+      ? project.duration_days
+      : project.durationDays ?? null;
+
+  const link = project.link || project.url || null;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -147,54 +193,95 @@ export default function ProjectDetailPage() {
               <dt className="w-32 font-semibold">프로젝트명</dt>
               <dd>{title}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">프로젝트 번호</dt>
               <dd>{projectId}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">나라 / 지역</dt>
               <dd>{countryRegion}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">총 사업비</dt>
               <dd>{formatNumber(totalBudget)}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">상태</dt>
               <dd>{status}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">시작일</dt>
               <dd>{formatDate(startDate)}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">종료일</dt>
               <dd>{formatDate(endDate)}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">기관</dt>
               <dd>{institution}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">주제</dt>
               <dd>{topic}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">공동 재정</dt>
               <dd>{coFinancing ? formatNumber(coFinancing) : "N/A"}</dd>
             </div>
+
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">펀딩 사이트</dt>
+              <dd>{site}</dd>
+            </div>
+
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">기간(일수)</dt>
+              <dd>{durationDays ?? "N/A"}</dd>
+            </div>
+
+            <div className="flex gap-4">
+              <dt className="w-32 font-semibold">링크</dt>
+              <dd>
+                {link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-indigo-600 underline break-all"
+                  >
+                    {link}
+                  </a>
+                ) : (
+                  "N/A"
+                )}
+              </dd>
+            </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">Carbon reduction</dt>
               <dd>{carbonReduction ?? "N/A"}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">수혜자 수</dt>
               <dd>{beneficiaries ?? "N/A"}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">위험요소</dt>
               <dd>{risks ?? "N/A"}</dd>
             </div>
+
             <div className="flex gap-4">
               <dt className="w-32 font-semibold">편입 타입</dt>
               <dd>{projectType ?? "N/A"}</dd>

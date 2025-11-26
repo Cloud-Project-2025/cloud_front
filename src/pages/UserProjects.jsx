@@ -165,16 +165,88 @@ export default function UserProjects() {
 
 function applyFilters(list, filters) {
   if (!filters || !Object.keys(filters).length) return list;
+
   let result = [...list];
 
+  // 1) 국가 / 지역
   const regions = filters["국가/지역"];
   if (regions && regions.length) {
-    result = result.filter((p) => regions.includes(p.country_region));
+    result = result.filter((p) => {
+      const region = p.country_region || p.country;
+      if (!region) return false;
+      return regions.some((r) => region.includes(r));
+    });
   }
 
-  const statusArr = filters["진행 상태"] || filters["진행상태"];
+  // 2) 진행 상태
+  const statusArr = filters["진행 상태"];
   if (statusArr && statusArr.length) {
     result = result.filter((p) => statusArr.includes(p.status));
+  }
+
+  // 3) 주제 영역 (Adaptation / Mitigation / Cross-cutting)
+  const themes = filters["주제 영역"];
+  if (themes && themes.length) {
+    result = result.filter((p) => {
+      const theme = p.theme_area || p.theme;
+      if (!theme) return false;
+      return themes.includes(theme);
+    });
+  }
+
+  // 4) 기관명 (UNDP, WorldBank, ADB 등)
+  const orgs = filters["기관명"];
+  if (orgs && orgs.length) {
+    result = result.filter((p) => {
+      const inst = p.institution || p.organization;
+      if (!inst) return false;
+      return orgs.includes(inst);
+    });
+  }
+
+  // 5) 총 사업비 (budget / total_amount)
+  const budgetFilters = filters["총사업비"];
+  if (budgetFilters && budgetFilters.length) {
+    result = result.filter((p) => {
+      const raw = p.budget ?? p.total_amount;
+      const budget = Number(raw);
+      if (!raw || Number.isNaN(budget)) return false;
+
+      return budgetFilters.some((label) => {
+        if (label.startsWith("Small")) return budget < 10_000_000;
+        if (label.startsWith("Medium"))
+          return budget >= 10_000_000 && budget < 50_000_000;
+        if (label.startsWith("Large")) return budget >= 50_000_000;
+        return true;
+      });
+    });
+  }
+
+  // 6) 공동재원 (co_financing / cofinancing)
+  const coFilters = filters["공동재원"];
+  if (coFilters && coFilters.length) {
+    result = result.filter((p) => {
+      const raw = p.co_financing ?? p.cofinancing;
+      const num =
+        raw === null || raw === undefined || raw === "" ? null : Number(raw);
+
+      return coFilters.some((label) => {
+        if (label === "None / Unknown")
+          return num === null || Number.isNaN(num);
+        if (label.startsWith("Small"))
+          return num !== null && !Number.isNaN(num) && num < 10_000_000;
+        if (label.startsWith("Medium"))
+          return (
+            num !== null &&
+            !Number.isNaN(num) &&
+            num >= 10_000_000 &&
+            num < 50_000_000
+          );
+        if (label.startsWith("Large"))
+          return num !== null && !Number.isNaN(num) && num >= 50_000_000;
+        return true;
+      });
+    });
   }
 
   return result;
