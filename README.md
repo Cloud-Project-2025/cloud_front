@@ -21,3 +21,9 @@ If you are developing a production application, we recommend using TypeScript wi
 2. npm install
 3. npm run dev
 4. Local : URL << 
+
+# 더미 테스트
+
+1. 유저 로그인 ( id : aaa@aaa.com , pw : 아무거나 )
+2. 어드민 로그인 ( id: admin@aaa.com , pw : 아무거나 )
+3. 연결 안되있어서 add project , 프로젝트 및 유저 삭제 기능, 검색 작동 X 
