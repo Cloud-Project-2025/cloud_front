@@ -16,33 +16,35 @@ export default function UserProjects() {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
 
+  // ✅ 페이지네이션 상태
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   useEffect(() => {
     if (!user) return;
 
-    // ✅ 실제 서비스 예시 (백엔드에서 현재 유저의 프로젝트만 가져오기)
+    // ✅ 더미 테스트 (현재 사용 중)
+    const mine = mockProjects.filter((p) => p.ownerEmail === user.email);
+    setAllProjects(mine);
+    setVisibleProjects(mine);
+    setPage(1);
+
+    // ✅ 실제 서비스 예시
     /*
     setLoading(true);
-    getUserProjects(user.id)
+    getUserProjects()
       .then((res) => {
         const list = res.data || [];
         setAllProjects(list);
         setVisibleProjects(list);
       })
       .catch((err) => {
-        console.error("getUserProjects 실패, mock으로 대체:", err);
-        const mine = mockProjects.filter(
-          (p) => p.ownerEmail === user.email // 또는 p.author 등
-        );
-        setAllProjects(mine);
-        setVisibleProjects(mine);
+        console.error("user projects load error:", err);
+        setAllProjects([]);
+        setVisibleProjects([]);
       })
       .finally(() => setLoading(false));
     */
-
-    // ✅ 더미 테스트 (현재 사용 중)
-    const mine = mockProjects.filter((p) => p.ownerEmail === user.email);
-    setAllProjects(mine);
-    setVisibleProjects(mine);
   }, [user]);
 
   const handleApplyFilters = (filters) => {
@@ -51,67 +53,67 @@ export default function UserProjects() {
       const next = applyFilters(allProjects, filters);
       setVisibleProjects(next);
       setSelectedIds((prev) =>
-        prev.filter((id) => next.some((p) => p.id === id))
+        prev.filter((id) => next.some((p) => p.id === id)),
       );
+      setPage(1);
     } catch (e) {
       console.error(e);
       setVisibleProjects([]);
       setSelectedIds([]);
+      setPage(1);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleOne = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
   const toggleAllVisible = () => {
-    const visibleIds = visibleProjects.map((p) => p.id);
-    const allSelected =
-      visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
-    if (allSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
+    if (
+      visibleProjects.length > 0 &&
+      visibleProjects.every((p) => selectedIds.includes(p.id))
+    ) {
+      setSelectedIds([]);
     } else {
-      setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
+      setSelectedIds(visibleProjects.map((p) => p.id));
     }
   };
 
-  const handleBulkDelete = () => {
-    if (!selectedIds.length) return;
-    if (!window.confirm(`${selectedIds.length}개 프로젝트를 삭제할까요? (더미)`))
-      return;
-
-    const leftAll = allProjects.filter((p) => !selectedIds.includes(p.id));
-    const leftVisible = visibleProjects.filter(
-      (p) => !selectedIds.includes(p.id)
+  const toggleOne = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id],
     );
-
-    setAllProjects(leftAll);
-    setVisibleProjects(leftVisible);
-    setSelectedIds([]);
   };
 
-  return (
-    <main className="max-w-6xl mx-auto px-4 py-8 flex gap-6">
-      {/* 오른쪽 필터 카드 */}
-      <aside className="w-[280px] shrink-0 order-2">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sticky top-24">
-          <FilterSidebar onApply={handleApplyFilters} />
-        </div>
-      </aside>
+  const handleBulkDelete = () => {
+    // 시연용: 실제 삭제 대신 콘솔 출력
+    console.log("삭제할 프로젝트 ID들:", selectedIds);
+    alert(
+      `시연용: 실제 삭제는 하지 않고,\n선택된 프로젝트 ID: [${selectedIds.join(
+        ", ",
+      )}] 를 서버에 보낸다고 가정합니다.`,
+    );
+  };
 
+  // ✅ 페이지네이션 계산
+  const totalCount = visibleProjects.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const pagedProjects = visibleProjects.slice(
+    startIndex,
+    startIndex + pageSize,
+  );
+
+  return (
+    <main className="max-w-6xl mx-auto flex gap-6 pt-6 pb-10">
       {/* 왼쪽 My Projects 카드 */}
       <section className="flex-1 space-y-3 order-1">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4 mb-2 flex items-center justify-between">
           {/* 로그인한 사용자 이메일 표시 */}
           <h2 className="text-lg font-semibold">
             {user ? `${user.email} 님의 프로젝트` : "My Projects Management"}
-    </h2>
+          </h2>
 
-    <div className="flex items-center gap-3 text-sm text-slate-600">
+          <div className="flex items-center gap-3 text-sm text-slate-600">
             <label className="flex items-center gap-2 text-xs cursor-pointer">
               <input
                 type="checkbox"
@@ -132,10 +134,61 @@ export default function UserProjects() {
           </div>
         </div>
 
+        {/* 페이지네이션 헤더 */}
+        <div className="flex items-center justify-between text-sm text-slate-700">
+          <div>
+            총{" "}
+            <span className="font-semibold text-indigo-600">
+              {totalCount}
+            </span>{" "}
+            개 프로젝트
+          </div>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <span className="text-xs text-slate-500">페이지 당</span>
+              <select
+                className="border rounded-md px-2 py-1 text-xs"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </label>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                className="px-2 py-1 border rounded-full disabled:opacity-40"
+                disabled={currentPage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                이전
+              </button>
+              <span>
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                className="px-2 py-1 border rounded-full disabled:opacity-40"
+                disabled={currentPage >= totalPages}
+                onClick={() =>
+                  setPage((p) => Math.min(totalPages, p + 1))
+                }
+              >
+                다음
+              </button>
+            </div>
+          </div>
+        </div>
+
         {loading ? (
           <p className="text-sm text-slate-500">Loading...</p>
-        ) : visibleProjects.length ? (
-          visibleProjects.map((project) => (
+        ) : pagedProjects.length ? (
+          pagedProjects.map((project) => (
             <div
               key={project.id}
               className="flex items-stretch gap-2 border-b border-transparent"
@@ -150,52 +203,60 @@ export default function UserProjects() {
               <div className="flex-1">
                 <ProjectCard
                   project={project}
-                  onClick={() => nav(`/projects/${project.id}`)} // 상세보기로 이동
+                  onClick={() => nav(`/projects/${project.id}`)}
                 />
               </div>
             </div>
           ))
         ) : (
-          <p className="text-sm text-slate-400 mt-4">No projects found.</p>
+          <p className="text-sm text-slate-500">
+            등록된 프로젝트가 없습니다.
+          </p>
         )}
       </section>
+
+      {/* 오른쪽 필터 */}
+      <aside className="w-[280px] shrink-0 order-2">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sticky top-24">
+          <FilterSidebar onApply={handleApplyFilters} />
+        </div>
+      </aside>
     </main>
   );
 }
 
+// ------------------------------
+// 필터 적용 함수 (Home과 동일 구조)
+// ------------------------------
 function applyFilters(list, filters) {
   if (!filters || !Object.keys(filters).length) return list;
 
   let result = [...list];
 
-  // 1) 국가 / 지역
   const regions = filters["국가/지역"];
   if (regions && regions.length) {
     result = result.filter((p) => {
-      const region = p.country_region || p.country;
+      const region = p.country_region || p.country || p.region;
       if (!region) return false;
       return regions.some((r) => region.includes(r));
     });
   }
 
-  // 2) 진행 상태
   const statusArr = filters["진행 상태"];
   if (statusArr && statusArr.length) {
     result = result.filter((p) => statusArr.includes(p.status));
   }
 
-  // 3) 주제 영역 (Adaptation / Mitigation / Cross-cutting)
   const themes = filters["주제 영역"];
   if (themes && themes.length) {
     result = result.filter((p) => {
       const theme = p.theme_area || p.theme;
       if (!theme) return false;
-      return themes.includes(theme);
+      return themes.some((t) => theme.includes(t));
     });
   }
 
-  // 4) 기관명 (UNDP, WorldBank, ADB 등)
-  const orgs = filters["기관명"];
+  const orgs = filters["기관"];
   if (orgs && orgs.length) {
     result = result.filter((p) => {
       const inst = p.institution || p.organization;
@@ -204,7 +265,6 @@ function applyFilters(list, filters) {
     });
   }
 
-  // 5) 총 사업비 (budget / total_amount)
   const budgetFilters = filters["총사업비"];
   if (budgetFilters && budgetFilters.length) {
     result = result.filter((p) => {
@@ -222,7 +282,6 @@ function applyFilters(list, filters) {
     });
   }
 
-  // 6) 공동재원 (co_financing / cofinancing)
   const coFilters = filters["공동재원"];
   if (coFilters && coFilters.length) {
     result = result.filter((p) => {

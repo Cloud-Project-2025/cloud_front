@@ -29,7 +29,7 @@ export default function ProjectCard({ project, onClick }) {
       className="w-full text-left group"
     >
       <article className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 py-4 transition hover:-translate-y-0.5 hover:shadow-md">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 min-w-0">
           {/* 왼쪽: 텍스트 */}
           <div className="flex-1 min-w-0">
             <h3 className="text-[15px] font-semibold text-indigo-700 mb-1 group-hover:text-indigo-800 truncate">
